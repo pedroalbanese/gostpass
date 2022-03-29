@@ -21,11 +21,11 @@ import (
 	_ "github.com/pedroalbanese/gogost/gost28147"
 	"github.com/pedroalbanese/gogost/gost34112012256"
 	"crypto/cipher"
-	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"io"
 	"io/ioutil"
+	"unsafe"
 	"sync"
 
 	"github.com/pedroalbanese/gostpass/pkg/cipherio"
@@ -67,31 +67,43 @@ func (k *Key) Compute() ComputedKey {
 	base := k.baseHash()
 	var wg sync.WaitGroup
 	wg.Add(2)
-	var tk [sha256.Size]byte
+	var tk [32]byte
 	go transformKeyBlock(&wg, tk[:gost3412128.BlockSize], base[:gost3412128.BlockSize], k.TransformSeed[:], k.TransformRounds)
 	go transformKeyBlock(&wg, tk[gost3412128.BlockSize:], base[gost3412128.BlockSize:], k.TransformSeed[:], k.TransformRounds)
 	wg.Wait()
-	tk = sha256.Sum256(tk[:])
+	Sum256 := func(msg []byte) [32]byte {
+		res := gost34112012256.New()
+		res.Write(msg)
+		hash := res.Sum(nil)
+		return *byte32([]byte(hash))
+	}
+	tk = Sum256(tk[:])
 	sum.Write(tk[:])
 
 	return sum.Sum(nil)
 }
 
 // baseHash returns the key's hash prior to encryption rounds.
-func (k *Key) baseHash() [sha256.Size]byte {
+func (k *Key) baseHash() [32]byte {
+	Sum256 := func(msg []byte) [32]byte {
+		res := gost34112012256.New()
+		res.Write(msg)
+		hash := res.Sum(nil)
+		return *byte32([]byte(hash))
+	}
 	if len(k.KeyFileHash) == 0 {
-		return sha256.Sum256(k.Password)
+		return Sum256(k.Password)
 	}
 	if len(k.Password) == 0 {
-		var a [sha256.Size]byte
+		var a [32]byte
 		copy(a[:], k.KeyFileHash)
 		return a
 	}
 	h := gost34112012256.New()
-	p := sha256.Sum256(k.Password)
+	p := Sum256(k.Password)
 	h.Write(p[:])
 	h.Write(k.KeyFileHash)
-	var a [sha256.Size]byte
+	var a [32]byte
 	h.Sum(a[:0])
 	return a
 }
@@ -174,4 +186,11 @@ func ReadKeyFile(r io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	return s.Sum(nil), nil
+}
+
+func byte32(s []byte) (a *[32]byte) {
+    if len(a) <= len(s) {
+        a = (*[len(a)]byte)(unsafe.Pointer(&s[0]))
+    }
+    return a
 }
