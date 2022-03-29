@@ -18,8 +18,7 @@ import (
 	"crypto/rand"
 	"io"
 
-//	"github.com/pedroalbanese/gostpass/pkg/kdbcrypt"
-	"gostpass/pkg/kdbcrypt"
+	"github.com/pedroalbanese/gostpass/pkg/kdbcrypt"
 )
 
 // Options is the set of parameters for creating or opening a database.
