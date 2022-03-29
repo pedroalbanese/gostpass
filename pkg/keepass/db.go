@@ -17,7 +17,6 @@ package keepass // import "github.com/pedroalbanese/gostpass/pkg/keepass"
 
 import (
 	"bytes"
-	_ "crypto/sha256"
 	"github.com/pedroalbanese/gogost/gost34112012256"
 	"encoding/binary"
 	"errors"
