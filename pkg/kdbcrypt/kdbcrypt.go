@@ -1,4 +1,5 @@
 // Copyright 2016 The Sandpass Authors
+// Copyright 2022 Pedro F. Albanese
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package kdbcrypt encrypts and decrypts data using the KeePass1 encryption scheme.
+// Package kdbcrypt encrypts and decrypts data using the GOST-KeePass1 encryption scheme.
 package kdbcrypt // import "github.com/pedroalbanese/gostpass/pkg/kdbcrypt"
 
 import (
